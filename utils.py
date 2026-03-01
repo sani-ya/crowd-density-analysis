@@ -25,7 +25,7 @@ class Config:
 
     # ---- Detection ----
     YOLO_MODEL = "yolov8n.pt"           # Ultralytics model name / path
-    CONFIDENCE_THRESHOLD = 0.35         # Minimum confidence for person detection
+    CONFIDENCE_THRESHOLD = 0.50         # Increased from 0.35 to reduce false positives
     PERSON_CLASS_ID = 0                 # COCO class id for "person"
 
     # ---- Density thresholds ----
@@ -39,9 +39,9 @@ class Config:
     COLOR_HIGH = (0, 0, 255)            # Red
 
     # ---- Anomaly detection ----
-    ANOMALY_SPIKE_PERCENT = 0.30        # 30 % spike triggers anomaly
-    ANOMALY_WINDOW_SECONDS = 5          # Rolling window length (seconds)
-    OVERCROWDING_THRESHOLD = 30         # Absolute count for overcrowding
+    ANOMALY_SPIKE_PERCENT = 0.80        # Now 80 % (reduce noise from small count changes)
+    ANOMALY_WINDOW_SECONDS = 10         # Extended from 5 to 10 for more stable baseline
+    OVERCROWDING_THRESHOLD = 50         # Increased from 30
 
     # ---- Logging ----
     CSV_FILE = "crowd_data.csv"

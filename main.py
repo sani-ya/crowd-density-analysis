@@ -230,7 +230,7 @@ def launch_gui(source) -> None:
     # ---- window ----
     root = tk.Tk()
     root.title("Crowd Monitoring System")
-    root.geometry("420x280")
+    root.geometry("420x330")
     root.resizable(False, False)
     root.configure(bg="#1e1e2e")
 
@@ -309,6 +309,10 @@ def launch_gui(source) -> None:
             monitor.stop()
             status_var.set("Stopping …")
 
+    def on_exit():
+        on_stop()
+        root.destroy()
+
     btn_frame = tk.Frame(root, bg="#1e1e2e")
     btn_frame.pack(pady=12)
     start_btn = tk.Button(btn_frame, text="▶  Start", command=on_start, width=12,
@@ -320,7 +324,12 @@ def launch_gui(source) -> None:
                          relief="flat", state="disabled")
     stop_btn.pack(side="left", padx=8)
 
-    root.protocol("WM_DELETE_WINDOW", lambda: (on_stop(), root.destroy()))
+    exit_btn = tk.Button(root, text="✕  Exit Application", command=on_exit, width=26,
+                         bg="#45475a", fg="#cdd6f4", font=("Segoe UI", 10, "bold"),
+                         relief="flat")
+    exit_btn.pack(pady=(0, 20))
+
+    root.protocol("WM_DELETE_WINDOW", on_exit)
     root.mainloop()
 
 
