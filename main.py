@@ -272,29 +272,53 @@ def launch_gui(source) -> None:
 
     def on_start():
         nonlocal monitor, monitor_thread
+        if monitor_thread and monitor_thread.is_alive():
+            return
+
         src = src_var.get()
         try:
             src = int(src)
         except ValueError:
             pass
-        monitor = CrowdMonitor(source=src, use_roi=roi_var.get())
-        monitor_thread = threading.Thread(target=monitor.start, daemon=True)
-        monitor_thread.start()
-        status_var.set("Monitoring …")
+
+        try:
+            status_var.set("Initializing …")
+            root.update_idletasks()
+            monitor = CrowdMonitor(source=src, use_roi=roi_var.get())
+            monitor_thread = threading.Thread(target=monitor.start, daemon=True)
+            monitor_thread.start()
+            status_var.set("Monitoring …")
+            start_btn.config(state="disabled")
+            stop_btn.config(state="normal")
+            # Periodically check if thread died
+            def check_thread():
+                if not monitor_thread.is_alive():
+                    status_var.set("Stopped / Finished.")
+                    start_btn.config(state="normal")
+                    stop_btn.config(state="disabled")
+                else:
+                    root.after(500, check_thread)
+            check_thread()
+        except Exception as e:
+            from tkinter import messagebox
+            messagebox.showerror("Error", f"Failed to start monitoring:\n{e}")
+            status_var.set("Error on start.")
 
     def on_stop():
         if monitor:
             monitor.stop()
-            status_var.set("Stopped — graph generated.")
+            status_var.set("Stopping …")
 
     btn_frame = tk.Frame(root, bg="#1e1e2e")
     btn_frame.pack(pady=12)
-    tk.Button(btn_frame, text="▶  Start", command=on_start, width=12,
-              bg="#a6e3a1", fg="#1e1e2e", font=("Segoe UI", 11, "bold"),
-              relief="flat").pack(side="left", padx=8)
-    tk.Button(btn_frame, text="⏹  Stop", command=on_stop, width=12,
-              bg="#f38ba8", fg="#1e1e2e", font=("Segoe UI", 11, "bold"),
-              relief="flat").pack(side="left", padx=8)
+    start_btn = tk.Button(btn_frame, text="▶  Start", command=on_start, width=12,
+                          bg="#a6e3a1", fg="#1e1e2e", font=("Segoe UI", 11, "bold"),
+                          relief="flat")
+    start_btn.pack(side="left", padx=8)
+    stop_btn = tk.Button(btn_frame, text="⏹  Stop", command=on_stop, width=12,
+                         bg="#f38ba8", fg="#1e1e2e", font=("Segoe UI", 11, "bold"),
+                         relief="flat", state="disabled")
+    stop_btn.pack(side="left", padx=8)
 
     root.protocol("WM_DELETE_WINDOW", lambda: (on_stop(), root.destroy()))
     root.mainloop()
